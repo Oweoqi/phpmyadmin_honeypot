@@ -30,7 +30,7 @@ echo ""
 echo "PhpMyAdmin Username and Password Configured ($phpmyadminUsername/$phpmyadminPassword)"
 echo ""
 mv ./phpmyadmin-interactive $directory/phpmyadmin
-chmod 700 log.txt
+chmod 700 $directory/phpmyadmin/log.txt
 echo ""
 echo "What web user is used on this machine? (default: www-data)"
 echo ""
