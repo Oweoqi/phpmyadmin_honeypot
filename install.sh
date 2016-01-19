@@ -30,22 +30,31 @@ echo ""
 echo "PhpMyAdmin Username and Password Configured ($phpmyadminUsername/$phpmyadminPassword)"
 echo ""
 mv ./phpmyadmin-interactive $directory/phpmyadmin
-echo "Rename the honeypot log filename (no extension and make this random): "
+chmod 700 log.txt
+echo ""
+echo "What web user is used on this machine? (default: www-data)"
+echo ""
+read webUser
+if [ -z "$webUser" ]; then
+    webUser="www-data"
+fi
+chown -R $webUser:$webUser $directory/phpmyadmin/
+echo -e "# Directories\nDisallow: /phpmyadmin/\n# Files\nDisallow: /phpmyadmin/index.php" > $directory/robots.txt
+echo "Where would you like the log.txt file to be moved to? (default: /var/log/phpadmin_honeypot.txt)"
 read phpmyadminLog
 if [ -z "$phpmyadminLog" ]; then
-    phpmyadminLog=$RANDOM
-    echo "No value supplied, using a random value: $phpmyadminLog.txt"
-    echo ""
+    phpmyadminLog="/var/log/phpadmin_honeypot.txt"
 else
-    echo "Using $phpmyadminLog.txt to capture authentication attempts"
+mv $directory/phpmyadmin/log.txt $phpmyadminLog
+
+    echo "Using $phpmyadminLog to capture authentication attempts"
     echo ""
 fi
 echo "Configure LogRhythm to extract data from $directory/phpmyadmin/$phpmyadminLog.txt"
-sed -i "/\$File = \"log.txt\";/c\\\$File = \"$phpmyadminLog.txt\";" $directory/phpmyadmin/index.php
-sed -i "/\$myFile = \"log.txt\";/c\\\$myFile = \"$phpmyadminLog.txt\";" $directory/phpmyadmin/login.php
-sed -i 's/log.txt/'$phpmyadminLog.txt'/g' $directory/phpmyadmin/master-config/index.php
-sed -i 's/log.txt/'$phpmyadminLog.txt'/g' $directory/phpmyadmin/master-config/phpinfo.php
-mv $directory/phpmyadmin/log.txt $directory/phpmyadmin/$phpmyadminLog.txt
+sed -i "/\$File = \"log.txt\";/c\\\$File = \"$phpmyadminLog\";" $directory/phpmyadmin/index.php
+sed -i "/\$myFile = \"log.txt\";/c\\\$myFile = \"$phpmyadminLog\";" $directory/phpmyadmin/login.php
+sed -i 's/log.txt/'$phpmyadminLog'/g' $directory/phpmyadmin/master-config/index.php
+sed -i 's/log.txt/'$phpmyadminLog'/g' $directory/phpmyadmin/master-config/phpinfo.php
 sed -i 's/USERNAME/'$phpmyadminUsername'/g' $directory/phpmyadmin/login.php
 sed -i 's/PASSWORD/'$phpmyadminPassword'/g' $directory/phpmyadmin/login.php
 if [ -f ../phpmyadmin_honeypot/README.md ]; then
@@ -54,7 +63,7 @@ fi
 echo ""
 echo "Fake PhpMyAdmin has been configured successfully and can be accessed via http://127.0.0.1/phpmyadmin/"
 echo "There are also one fake phpinfo page: $directory/phpmyadmin/phpinfo.php"
-echo "Logs will write to: $directory/phpmyadmin/$phpmyadminLog.txt"
+echo "Logs will write to: $phpmyadminLog"
 echo "Username set to => $phpmyadminUsername"
 echo "Password set to => $phpmyadminPassword"
 echo ""
